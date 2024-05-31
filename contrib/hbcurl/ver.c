@@ -1,7 +1,7 @@
 /*
  * curl_version()/curl_version_info()
  *
- * Copyright 2008-2010 Viktor Szakats
+ * Copyright 2008-present Viktor Szakats
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,11 +79,11 @@ HB_FUNC( CURL_VERSION_INFO )
       hb_arraySetNI( pArray, HB_CURLVERINFO_SSLVERSION_NUM, data->ssl_version_num );              /* not used anymore, always 0 */
       hb_arraySetC(  pArray, HB_CURLVERINFO_LIBZ_VERSION  , data->libz_version );                 /* human readable string */
 #if defined( CURLVERSION_SECOND )
-      hb_arraySetC(  pArray, HB_CURLVERINFO_PROTOCOLS     , data->age >= CURLVERSION_SECOND ? data->ares : NULL );
-      hb_arraySetNI( pArray, HB_CURLVERINFO_ARES          , data->age >= CURLVERSION_SECOND ? data->ares_num : 0 );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_ARES          , data->age >= CURLVERSION_SECOND ? data->ares : NULL );
+      hb_arraySetNI( pArray, HB_CURLVERINFO_ARES_NUM      , data->age >= CURLVERSION_SECOND ? data->ares_num : 0 );
 #else
-      hb_arraySetC(  pArray, HB_CURLVERINFO_PROTOCOLS     , NULL );
-      hb_arraySetNI( pArray, HB_CURLVERINFO_ARES          , 0 );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_ARES          , NULL );
+      hb_arraySetNI( pArray, HB_CURLVERINFO_ARES_NUM      , 0 );
 #endif
 #if defined( CURLVERSION_THIRD )
       hb_arraySetC(  pArray, HB_CURLVERINFO_LIBIDN        , data->age >= CURLVERSION_THIRD ? data->libidn : NULL );
@@ -105,20 +105,76 @@ HB_FUNC( CURL_VERSION_INFO )
       hb_arraySetC(  pArray, HB_CURLVERINFO_BROTLI_VERSION, data->age >= CURLVERSION_FIFTH ? data->brotli_version : NULL );
 #else
       hb_arraySetNI( pArray, HB_CURLVERINFO_BROTLI_VER_NUM, 0 );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_BROTLI_VERSION, NULL );
 #endif
+#if defined( CURLVERSION_SIXTH )
+      hb_arraySetNI( pArray, HB_CURLVERINFO_NGHTTP2_VER_NUM, data->age >= CURLVERSION_SIXTH ? data->nghttp2_ver_num : 0 );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_NGHTTP2_VERSION, data->age >= CURLVERSION_SIXTH ? data->nghttp2_version : NULL );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_QUIC_VERSION, data->age >= CURLVERSION_SIXTH ? data->quic_version : NULL );
+#else
+      hb_arraySetNI( pArray, HB_CURLVERINFO_NGHTTP2_VER_NUM, 0 );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_NGHTTP2_VERSION, NULL );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_QUIC_VERSION, NULL );
+#endif
+#if defined( CURLVERSION_SEVENTH )
+      hb_arraySetC(  pArray, HB_CURLVERINFO_CAINFO, data->age >= CURLVERSION_SEVENTH ? data->cainfo : NULL );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_CAPATH, data->age >= CURLVERSION_SEVENTH ? data->capath : NULL );
+#else
+      hb_arraySetC(  pArray, HB_CURLVERINFO_CAINFO, NULL );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_CAPATH, NULL );
+#endif
+#if defined( CURLVERSION_EIGHTH )
+      hb_arraySetNI( pArray, HB_CURLVERINFO_ZSTD_VER_NUM, data->age >= CURLVERSION_EIGHTH ? data->zstd_ver_num : 0 );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_ZSTD_VERSION, data->age >= CURLVERSION_EIGHTH ? data->zstd_version : NULL );
+#else
+      hb_arraySetNI( pArray, HB_CURLVERINFO_ZSTD_VER_NUM, 0 );
+      hb_arraySetC(  pArray, HB_CURLVERINFO_ZSTD_VERSION, NULL );
+#endif
+#if defined( CURLVERSION_NINTH )
+      hb_arraySetC(  pArray, HB_CURLVERINFO_HYPER_VERSION, data->age >= CURLVERSION_NINETH ? data->hyper_version : NULL );
+#else
+      hb_arraySetC(  pArray, HB_CURLVERINFO_HYPER_VERSION, NULL );
+#endif
+#if defined( CURLVERSION_TENTH )
+      hb_arraySetC(  pArray, HB_CURLVERINFO_GSASL_VERSION, data->age >= CURLVERSION_TENTH ? data->gsasl_version : NULL );
+#else
+      hb_arraySetC(  pArray, HB_CURLVERINFO_GSASL_VERSION, NULL );
+#endif
+#if defined( CURLVERSION_ELEVENTH )
+      if( data->age >= CURLVERSION_ELEVENTH )
       {
-         PHB_ITEM pProtocols;
+         PHB_ITEM pList;
          int      nCount = 0;
-         const char * const * prot = data->protocols;
+         const char * const * item = data->feature_names;
 
-         while( *( prot++ ) )
+         while( *( item++ ) )
             nCount++;
 
-         pProtocols = hb_arrayGetItemPtr( pArray, HB_CURLVERINFO_PROTOCOLS );
-         hb_arrayNew( pProtocols, nCount );
+         pList = hb_arrayGetItemPtr( pArray, HB_CURLVERINFO_FEATURE_NAMES );
+         hb_arrayNew( pList, nCount );
 
-         for( prot = data->protocols, nCount = 1; *prot; prot++ )
-            hb_arraySetC( pProtocols, nCount++, *prot );
+         for( item = data->feature_names, nCount = 1; *item; item++ )
+            hb_arraySetC( pList, nCount++, *item );
+      }
+#endif
+#if defined( CURLVERSION_TWELFTH )
+      hb_arraySetC(  pArray, HB_CURLVERINFO_RTMP_VERSION, data->age >= CURLVERSION_TWELFTH ? data->rtmp_version : NULL );
+#else
+      hb_arraySetC(  pArray, HB_CURLVERINFO_RTMP_VERSION, NULL );
+#endif
+      {
+         PHB_ITEM pList;
+         int      nCount = 0;
+         const char * const * item = data->protocols;
+
+         while( *( item++ ) )
+            nCount++;
+
+         pList = hb_arrayGetItemPtr( pArray, HB_CURLVERINFO_PROTOCOLS );
+         hb_arrayNew( pList, nCount );
+
+         for( item = data->protocols, nCount = 1; *item; item++ )
+            hb_arraySetC( pList, nCount++, *item );
       }
 
       hb_itemReturnRelease( pArray );
