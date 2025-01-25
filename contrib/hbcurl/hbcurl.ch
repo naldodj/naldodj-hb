@@ -342,6 +342,7 @@
 #define HB_CURLOPT_QUICK_EXIT                 293
 #define HB_CURLOPT_SERVER_RESPONSE_TIMEOUT_MS 294
 #define HB_CURLOPT_ECH                        295
+#define HB_CURLOPT_TCP_KEEPCNT                296
 #define HB_CURLOPT_DOWNLOAD                   1001  /* Harbour special ones */
 #define HB_CURLOPT_XFERINFOBLOCK              1002
 #define HB_CURLOPT_UL_FILE_SETUP              1003
@@ -633,6 +634,7 @@
 #define HB_CURLINFO_XFER_ID                   61
 #define HB_CURLINFO_CONN_ID                   62
 #define HB_CURLINFO_QUEUE_TIME_T              63
+#define HB_CURLINFO_POSTTRANSFER_TIME_T       64
 
 /* HB_CURLINFO_PROXY_ERROR results. */
 #define HB_CURLPX_OK                                0
@@ -708,14 +710,14 @@
 #define HB_CURLE_FTP_COULDNT_USE_REST         31 /* the REST command failed */
 #define HB_CURLE_OBSOLETE32                   32 /* NOT USED */
 #define HB_CURLE_RANGE_ERROR                  33 /* RANGE "command" didn't work */
-#define HB_CURLE_HTTP_POST_ERROR              34 /* */
+#define HB_CURLE_HTTP_POST_ERROR              34 /* obsolete */
 #define HB_CURLE_SSL_CONNECT_ERROR            35 /* wrong when connecting with SSL */
 #define HB_CURLE_BAD_DOWNLOAD_RESUME          36 /* couldn't resume download */
 #define HB_CURLE_FILE_COULDNT_READ_FILE       37 /* */
 #define HB_CURLE_LDAP_CANNOT_BIND             38 /* */
 #define HB_CURLE_LDAP_SEARCH_FAILED           39 /* */
 #define HB_CURLE_OBSOLETE40                   40 /* NOT USED */
-#define HB_CURLE_FUNCTION_NOT_FOUND           41 /* */
+#define HB_CURLE_FUNCTION_NOT_FOUND           41 /* obsolete */
 #define HB_CURLE_ABORTED_BY_CALLBACK          42 /* */
 #define HB_CURLE_BAD_FUNCTION_ARGUMENT        43 /* */
 #define HB_CURLE_OBSOLETE44                   44 /* NOT USED */
@@ -781,6 +783,8 @@
 #define HB_CURLE_TOO_LARGE                    100 /* a value/data met its maximum */
 
 #define HB_CURLE_OBSOLETE16                   HB_CURLE_HTTP2
+#define HB_CURLE_OBSOLETE34                   HB_CURLE_HTTP_POST_ERROR
+#define HB_CURLE_OBSOLETE41                   HB_CURLE_FUNCTION_NOT_FOUND
 
 /* curl_version_info() returned array positions. */
 #define HB_CURLVERINFO_VERSION                1
@@ -924,6 +928,7 @@
 #define HB_CURLUE_BAD_SLASHES                 28
 #define HB_CURLUE_BAD_USER                    29
 #define HB_CURLUE_LACKS_IDN                   30
+#define HB_CURLUE_TOO_LARGE                   31
 
 /* URL parts */
 #define HB_CURLUPART_URL                      0
@@ -953,6 +958,8 @@
 #define HB_CURLU_ALLOW_SPACE                  hb_bitShift( 1, 11 )  /* Allow spaces in the URL */
 #define HB_CURLU_PUNYCODE                     hb_bitShift( 1, 12 )  /* get the host name in punycode */
 #define HB_CURLU_PUNY2IDN                     hb_bitShift( 1, 13 )  /* punycode => IDN conversion */
+#define HB_CURLU_GET_EMPTY                    hb_bitShift( 1, 14 )  /* allow empty queries and fragments when extracting the URL or the components */
+#define HB_CURLU_NO_GUESS_SCHEME              hb_bitShift( 1, 15 )  /* for get, don't accept a guess */
 
 /* curl_ws_send()/curl_ws_recv() flags */
 #define HB_CURLWS_TEXT                        hb_bitShift( 1, 0 )
@@ -966,5 +973,32 @@
 /* This is a return code for the progress callback that, when returned, will
    signal libcurl to continue executing the default progress function */
 #define HB_CURL_PROGRESSFUNC_CONTINUE         0x10000001
+
+/* multi interface result codes. */
+#define HB_CURLM_ERROR                        -9 /* request not passed to libcurl */
+#define HB_CURLM_CALL_MULTI_PERFORM           -1 /* please call curl_multi_perform() or curl_multi_socket*() soon */
+#define HB_CURLM_OK                           0
+#define HB_CURLM_BAD_HANDLE                   1  /* the passed-in handle is not a valid CURLM handle */
+#define HB_CURLM_BAD_EASY_HANDLE              2  /* an easy handle was not good/valid */
+#define HB_CURLM_OUT_OF_MEMORY                3  /* if you ever get this, you're in deep sh*t */
+#define HB_CURLM_INTERNAL_ERROR               4  /* this is a libcurl bug */
+#define HB_CURLM_BAD_SOCKET                   5  /* the passed in socket argument did not match */
+#define HB_CURLM_UNKNOWN_OPTION               6  /* curl_multi_setopt() with unsupported option */
+#define HB_CURLM_ADDED_ALREADY                7  /* an easy handle already added to a multi handle was attempted to get added - again */
+#define HB_CURLM_RECURSIVE_API_CALL           8  /* an api function was called from inside a callback */
+#define HB_CURLM_WAKEUP_FAILURE               9  /* wakeup is unavailable or failed */
+#define HB_CURLM_BAD_FUNCTION_ARGUMENT        10 /* function called with a bad parameter */
+#define HB_CURLM_ABORTED_BY_CALLBACK          11
+#define HB_CURLM_UNRECOVERABLE_POLL           12
+
+/* curl_multi_info_read() result codes. */
+#define HB_CURLMSG_NONE                       0  /* first, not used */
+#define HB_CURLMSG_DONE                       1  /* This easy handle has completed. 'result' contains the CURLcode of the transfer */
+
+#define HB_CURLMSG_RESP_LEN                   1  /* queue len */
+#define HB_CURLMSG_RESP_RESPONSE_CODE         2  /* curl_easy_getinfo( msg->easy_handle, CURLINFO_RESPONSE_CODE ) */
+#define HB_CURLMSG_RESP_MSG                   3  /* CURLMSG  */
+#define HB_CURLMSG_RESP_RESULT                4  /* CURLcode */
+#define HB_CURLMSG_RESP_LAST                  HB_CURLMSG_RESP_RESULT
 
 #endif /* HBCURL_CH_ */
